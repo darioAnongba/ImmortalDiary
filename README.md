@@ -1,6 +1,6 @@
 # Immortal Diary - Dario Anongba Varela, Nativity Carol
 
-Immortal Diary of Dario Anongba Varela and Nativity Carol. Use it wisely, as you cannot go back and cannot delete it!
+Immortal Diary of Dario Anongba Varela and Nativity Carol. Most important moments of our live. Use it wisely, as you cannot go back and cannot delete it!
 
 ## Getting Started
 

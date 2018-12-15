@@ -1,7 +1,7 @@
 {
   "name": "immortaldiary",
   "version": "1.0.0",
-  "description": "Immortal Diary of Dario Anongba Varela and Nativity Carol. Use it wisely, as you cannot go back",
+  "description": "Immortal Diary of Dario Anongba Varela and Nativity Carol. Most important moments of our live. Use it wisely, as you cannot go back",
   "main": "truffle.js",
   "scripts": {
     "test": "truffle test"
@@ -29,6 +29,8 @@
   },
   "homepage": "https://github.com/darioAnongba/ImmortalDiary#readme",
   "dependencies": {
-    "dotenv": "^6.2.0"
+    "dotenv": "^6.2.0",
+    "openzeppelin-solidity": "^2.0.0",
+    "truffle-hdwallet-provider": "0.0.6"
   }
 }
