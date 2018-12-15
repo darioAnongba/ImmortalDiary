@@ -1,0 +1,34 @@
+{
+  "name": "immortaldiary",
+  "version": "1.0.0",
+  "description": "Immortal Diary of Dario Anongba Varela and Nativity Carol. Use it wisely, as you cannot go back",
+  "main": "truffle.js",
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darioAnongba/ImmortalDiary.git"
+  },
+  "keywords": [
+    "ethereum",
+    "immortal",
+    "diary",
+    "dario",
+    "anongba",
+    "varela",
+    "nativity",
+    "carol",
+    "blockchain",
+    "immutable"
+  ],
+  "author": "Dario Anongba Varela",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darioAnongba/ImmortalDiary/issues"
+  },
+  "homepage": "https://github.com/darioAnongba/ImmortalDiary#readme",
+  "dependencies": {
+    "dotenv": "^6.2.0"
+  }
+}
