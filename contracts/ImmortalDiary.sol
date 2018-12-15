@@ -17,7 +17,7 @@ contract ImmortalDiary is Ownable {
         address by;
     }
 
-    struct Owner {
+    struct Member {
         address account;
         string name;
     }
@@ -30,31 +30,39 @@ contract ImmortalDiary is Ownable {
     /* --- Variables --- */
     uint256 public nbEvents;
 
-    mapping (address => Owner) public funders;
-    mapping (address => Owner) public owners;
+    mapping (address => Member) public funders;
+    mapping (address => Member) public members;
     mapping (uint256 => Event) public events;
 
     /* --- Events --- */
     event FunderAdded(address indexed by, address indexed account, string name, uint256 date);
-    event OwnerAdded(address indexed by, address indexed account, string name, uint256 date);
-    event OwnerRemoved(address indexed by, address indexed account, string name, uint256 date);
+    event MemberAdded(address indexed by, address indexed account, string name, uint256 date);
+    event MemberRemoved(address indexed by, address indexed account, string name, uint256 date);
     event EventAdded(address indexed by, uint256 eventId, uint256 date);
 
     /* --- Modifiers --- */
 
     /**
-    * @dev Checks that account is a funder
+    * @dev Checks that account is a funder or the owner
     */
     modifier onlyFundersOrOwner() {
-        require(isOwner() || isFunder(msg.sender), "Not a funder");
+        require(isOwner() || isFunder(msg.sender), "Not a funder or owner");
         _;
     }
 
     /**
-    * @dev Checks that account is an owner (funders are among owners)
+    * @dev Checks that account is a member or the owner (funders are among members)
     */
-    modifier onlyOwners() {
-        require(isOwner() || isOwner(msg.sender), "Not an owner");
+    modifier onlyMembersOrOwner() {
+        require(isOwner() || isMember(msg.sender), "Not a member or owner");
+        _;
+    }
+
+    /**
+    * @dev Checks that account is a member (funders are among members)
+    */
+    modifier onlyMembers() {
+        require(isMember(msg.sender), "Not a member");
         _;
     }
 
@@ -62,6 +70,7 @@ contract ImmortalDiary is Ownable {
 
     /**
      * @dev Creates a new immortal diary with a name and a description
+     *
      * @param diaryName The name of the diary
      * @param diaryDescription The description of the diary. What will this diary be used for?
      */
@@ -82,13 +91,13 @@ contract ImmortalDiary is Ownable {
     }
 
     /**
-    * @dev Verifies that a given account is an owner
+    * @dev Verifies that a given account is a member
     *
     * @param account The address to verify
-    * @return true if account is an owner, false otherwise
+    * @return true if account is a member, false otherwise
     */
-    function isOwner(address account) public view returns (bool) {
-        return super.isOwner() || owners[account].account != address(0);
+    function isMember(address account) public view returns (bool) {
+        return members[account].account != address(0);
     }
 
     /**
@@ -99,54 +108,63 @@ contract ImmortalDiary is Ownable {
     */
     function addFunder(address account, string memory funderName) public onlyOwner() {
         require(account != address(0), "cannot be 0x0 address");
+        require(!isFunder(account), "Account is already a funder");
 
-        Owner memory newFunder;
+        Member memory newFunder;
         newFunder.account = account;
         newFunder.name = funderName;
 
         funders[account] = newFunder;
-        owners[account] = newFunder;
+        members[account] = newFunder;
         emit FunderAdded(msg.sender, account, funderName, now);
+        emit MemberAdded(msg.sender, account, funderName, now);
     }
 
     /**
-    * @dev Owners can add other owners to the diary
+    * @dev Members (and the owner) can add other members to the diary
     *
-    * @param account The account of the owner to add
-    * @param ownerName The name of the owner to add
+    * @param account The account of the member to add
+    * @param memberName The name of the member to add
     */
-    function addOwner(address account, string memory ownerName) public onlyOwners() {
+    function addMember(address account, string memory memberName) public onlyMembersOrOwner() {
         require(account != address(0), "cannot be 0x0 address");
+        require(!isMember(account), "Account is already a member");
 
-        Owner memory newOwner;
-        newOwner.account = account;
-        newOwner.name = ownerName;
+        // Check that a funder with the same address does not exist
+        Member memory funder = funders[account];
+        if(funder.account != address(0)) {
+            members[account] = funder;
+        } else {
+            Member memory newMember;
+            newMember.account = account;
+            newMember.name = memberName;
+            members[account] = newMember;
+        }
 
-        owners[account] = newOwner;
-        emit OwnerAdded(msg.sender, account, ownerName, now);
+        emit MemberAdded(msg.sender, account, memberName, now);
     }
 
     /**
-    * @dev Funders can remove owners from the diary
+    * @dev Funders (and the owner) can remove members from the diary
     *
-    * @param account The account of the owner to remove
+    * @param account The account of the member to remove
     */
-    function removeOwner(address account) public onlyFundersOrOwner() {
-        require(account != address(0), "cannot be 0x0 address");
-        require(isOwner(account), "Owner does not exist");
+    function removeMember(address account) public onlyFundersOrOwner() {
+        require(isMember(account), "Member does not exist");
+        require(!isFunder(account), "Cannot remove a member that is a founder");
         
-        Owner memory owner = owners[account];
-        delete owners[account];
-        emit OwnerRemoved(msg.sender, owner.account, owner.name, now);
+        Member memory member = members[account];
+        delete members[account];
+        emit MemberRemoved(msg.sender, member.account, member.name, now);
     }
 
     /**
-    * @dev Owners can add events to the diary. Event are immutable and cannot be deleted
+    * @dev Members can add events to the diary. Event are immutable and cannot be deleted
     *
     * @param eventDescription Description of the event
     * @param location Location of the event
     */
-    function addEvent(string memory eventDescription, string memory location) public onlyOwners() {
+    function addEvent(string memory eventDescription, string memory location) public onlyMembers() {
         Event memory newEvent;
         newEvent.date = now;
         newEvent.by = msg.sender;
@@ -166,5 +184,23 @@ contract ImmortalDiary is Ownable {
     */
     function getEvent(uint256 id) public view returns (Event memory) {
         return events[id];
+    }
+
+    /**
+    * @dev Get a specific funder
+    *
+    * @param account Address of the funder
+    */
+    function getFunder(address account) public view returns (Member memory) {
+        return funders[account];
+    }
+
+    /**
+    * @dev Get a specific member
+    *
+    * @param account Address of the member
+    */
+    function getMember(address account) public view returns (Member memory) {
+        return members[account];
     }
 }

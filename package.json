@@ -4,6 +4,7 @@
   "description": "Immortal Diary of Dario Anongba Varela and Nativity Carol. Most important moments of our live. Use it wisely, as you cannot go back",
   "main": "truffle.js",
   "scripts": {
+    "truffle": "truffle console",
     "test": "truffle test"
   },
   "repository": {
@@ -31,6 +32,8 @@
   "dependencies": {
     "@types/web3": "^1.0.14",
     "dotenv": "^6.2.0",
+    "solium": "^1.1.8",
+    "truffle": "^5.0.0-beta.2",
     "truffle-hdwallet-provider": "0.0.6",
     "web3": "^1.0.0-beta.37",
     "web3-provider-engine": "git+https://github.com/cgewecke/provider-engine.git#web3-one"
