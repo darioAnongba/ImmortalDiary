@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-var HDWalletProvider = require("truffle-hdwallet-provider");
+var HDWalletProvider = require("./hdwallet");
 
 const providerWithMnemonic = (mnemonic, rpcEndpoint) =>
   new HDWalletProvider(mnemonic, rpcEndpoint);

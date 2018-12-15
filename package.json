@@ -29,8 +29,10 @@
   },
   "homepage": "https://github.com/darioAnongba/ImmortalDiary#readme",
   "dependencies": {
+    "@types/web3": "^1.0.14",
     "dotenv": "^6.2.0",
-    "openzeppelin-solidity": "^2.0.0",
-    "truffle-hdwallet-provider": "0.0.6"
+    "truffle-hdwallet-provider": "0.0.6",
+    "web3": "^1.0.0-beta.37",
+    "web3-provider-engine": "git+https://github.com/cgewecke/provider-engine.git#web3-one"
   }
 }
