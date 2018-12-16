@@ -30,9 +30,9 @@ contract ImmortalDiary is Ownable {
     /* --- Variables --- */
     uint256 public nbEvents;
 
-    mapping (address => Member) public funders;
-    mapping (address => Member) public members;
-    mapping (uint256 => Event) public events;
+    mapping (address => Member) private _funders;
+    mapping (address => Member) private _members;
+    mapping (uint256 => Event) private _events;
 
     /* --- Events --- */
     event FunderAdded(address indexed by, address indexed account, string name, uint256 date);
@@ -87,7 +87,7 @@ contract ImmortalDiary is Ownable {
     * @return true if account is a funder, false otherwise
     */
     function isFunder(address account) public view returns (bool) {
-        return funders[account].account != address(0);
+        return _funders[account].account != address(0);
     }
 
     /**
@@ -97,7 +97,7 @@ contract ImmortalDiary is Ownable {
     * @return true if account is a member, false otherwise
     */
     function isMember(address account) public view returns (bool) {
-        return members[account].account != address(0);
+        return _members[account].account != address(0);
     }
 
     /**
@@ -109,13 +109,14 @@ contract ImmortalDiary is Ownable {
     function addFunder(address account, string memory funderName) public onlyOwner() {
         require(account != address(0), "cannot be 0x0 address");
         require(!isFunder(account), "Account is already a funder");
+        require(!stringIsEmpty(funderName), "Funder name cannot be empty");
 
         Member memory newFunder;
         newFunder.account = account;
         newFunder.name = funderName;
 
-        funders[account] = newFunder;
-        members[account] = newFunder;
+        _funders[account] = newFunder;
+        _members[account] = newFunder;
         emit FunderAdded(msg.sender, account, funderName, now);
         emit MemberAdded(msg.sender, account, funderName, now);
     }
@@ -129,16 +130,17 @@ contract ImmortalDiary is Ownable {
     function addMember(address account, string memory memberName) public onlyMembersOrOwner() {
         require(account != address(0), "cannot be 0x0 address");
         require(!isMember(account), "Account is already a member");
+        require(!stringIsEmpty(memberName), "Member name cannot be empty");
 
         // Check that a funder with the same address does not exist
-        Member memory funder = funders[account];
+        Member memory funder = _funders[account];
         if(funder.account != address(0)) {
-            members[account] = funder;
+            _members[account] = funder;
         } else {
             Member memory newMember;
             newMember.account = account;
             newMember.name = memberName;
-            members[account] = newMember;
+            _members[account] = newMember;
         }
 
         emit MemberAdded(msg.sender, account, memberName, now);
@@ -153,8 +155,8 @@ contract ImmortalDiary is Ownable {
         require(isMember(account), "Member does not exist");
         require(!isFunder(account), "Cannot remove a member that is a founder");
         
-        Member memory member = members[account];
-        delete members[account];
+        Member memory member = _members[account];
+        delete _members[account];
         emit MemberRemoved(msg.sender, member.account, member.name, now);
     }
 
@@ -165,6 +167,9 @@ contract ImmortalDiary is Ownable {
     * @param location Location of the event
     */
     function addEvent(string memory eventDescription, string memory location) public onlyMembers() {
+        require(!stringIsEmpty(eventDescription), "Event description cannot be empty");
+        require(!stringIsEmpty(location), "Event location cannot be empty");
+
         Event memory newEvent;
         newEvent.date = now;
         newEvent.by = msg.sender;
@@ -173,7 +178,7 @@ contract ImmortalDiary is Ownable {
 
         uint256 eventId = nbEvents++;
 
-        events[eventId] = newEvent;
+        _events[eventId] = newEvent;
         emit EventAdded(msg.sender, eventId, now);
     }
 
@@ -183,7 +188,7 @@ contract ImmortalDiary is Ownable {
     * @param id Id of the event
     */
     function getEvent(uint256 id) public view returns (Event memory) {
-        return events[id];
+        return _events[id];
     }
 
     /**
@@ -192,7 +197,7 @@ contract ImmortalDiary is Ownable {
     * @param account Address of the funder
     */
     function getFunder(address account) public view returns (Member memory) {
-        return funders[account];
+        return _funders[account];
     }
 
     /**
@@ -201,6 +206,10 @@ contract ImmortalDiary is Ownable {
     * @param account Address of the member
     */
     function getMember(address account) public view returns (Member memory) {
-        return members[account];
+        return _members[account];
+    }
+
+    function stringIsEmpty(string memory str) private pure returns (bool) {
+        return bytes(str).length == 0;
     }
 }
